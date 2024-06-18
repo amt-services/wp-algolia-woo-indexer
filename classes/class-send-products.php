@@ -214,6 +214,15 @@ if (!class_exists('Algolia_Send_Products')) {
                 $record['regular_price']                 = $regular_price;
                 $record['sale_price']                    = $sale_price;
                 $record['on_sale']                       = $product->is_on_sale();
+				$record['product_slug']              = $product->get_slug();
+				$record['sku']                       = $product->get_sku(); // Add this line for product SKU
+				// Get categories names
+				$product_categories = wp_get_post_terms($product->get_id(), 'product_cat', array('fields' => 'names'));
+				$record['categories']                = $product_categories;
+
+				// Get tags names
+				$product_tags = wp_get_post_terms($product->get_id(), 'product_tag', array('fields' => 'names'));
+				$record['tags']                      = $product_tags;
                 $records[] = $record;
             }
             wp_reset_postdata();
@@ -224,8 +233,10 @@ if (!class_exists('Algolia_Send_Products')) {
              */
             $result = $index->saveObjects($records);
 
-            if ('Algolia\AlgoliaSearch\Response\NullResponse' === get_class($result)) {
-                wp_die(esc_html__('No response from the server. Please check your settings and try again', 'algolia_woo_indexer_settings'));
+            if ('Algolia\AlgoliaSearch\Response\NullResponse' === get_class($result)) {		    
+		    echo '<div class="notice notice-error is-dismissible">
+					 	<p>' . esc_html__('Potential API key issue. You may dismiss this if you are using the premium version.', 'algolia-woo-indexer') . '</p>
+				  		</div>';		    
             }
 
             /**
